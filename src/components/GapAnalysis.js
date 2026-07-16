@@ -194,7 +194,7 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData }
         <section className="results-section visible">
           <div className="results-grid">
             <div className="result-card neo-pressed score-card">
-              <h4 className="card-title">
+              <h4 className="skills-heading">
                 <span className="material-symbols-outlined">speed</span> Match Score
               </h4>
               <div className="score-ring-container">
@@ -206,10 +206,10 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData }
             </div>
 
             <div className="result-card neo-pressed">
-              <h4 className="card-title" style={{ color: 'var(--success-color)' }}>
+              <h4 className="skills-heading match">
                 <span className="material-symbols-outlined">check_circle</span> Matched Skills
               </h4>
-              <div className="skill-container">
+              <div className="skills-badges">
                 {result.matchedSkills?.length === 0 ? (
                   <span className="empty-state">No matching skills found</span>
                 ) : (
@@ -221,10 +221,10 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData }
             </div>
 
             <div className="result-card neo-pressed">
-              <h4 className="card-title" style={{ color: 'var(--danger-color)' }}>
+              <h4 className="skills-heading gap">
                 <span className="material-symbols-outlined">error</span> Missing Skills
               </h4>
-              <div className="skill-container">
+              <div className="skills-badges">
                 {result.missingSkills?.length === 0 ? (
                   <span className="empty-state">No gaps — great match!</span>
                 ) : (
@@ -237,7 +237,7 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData }
           </div>
           
           <div className="result-card insight-card neo-pressed" style={{ marginTop: '24px' }}>
-            <h4 className="card-title">
+            <h4 className="skills-heading">
               <span className="material-symbols-outlined">gavel</span> Fit Verdict
             </h4>
             
