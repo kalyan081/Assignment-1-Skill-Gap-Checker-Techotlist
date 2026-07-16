@@ -4,7 +4,7 @@ import React from 'react';
 
 export default function Dashboard({ userName, history, onLoadAnalysis, onDeleteAnalysis }) {
   const totalAnalyses = history.length;
-  const avgMatch = totalAnalyses > 0 
+  const avgMatch = totalAnalyses > 0
     ? Math.round(history.reduce((acc, h) => acc + (h.matchPercentage || 0), 0) / totalAnalyses)
     : 0;
 
