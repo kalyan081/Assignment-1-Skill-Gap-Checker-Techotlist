@@ -64,21 +64,19 @@ export default function SkillExtraction() {
 
       {skills && (
         <div className="results-section visible" style={{ marginTop: '24px' }}>
-          <div className="results-grid">
-            <div className="result-card neo-pressed">
-              <h4 className="skills-heading match">
-                <span className="material-symbols-outlined">psychology</span>
-                Extracted Skills ({skills.length})
-              </h4>
-              <div className="skills-badges">
-                {skills.length === 0 ? (
-                  <span className="empty-state">No technical skills found.</span>
-                ) : (
-                  skills.map((skill, i) => (
-                    <span key={i} className="skill-badge match visible">{skill}</span>
-                  ))
-                )}
-              </div>
+          <div className="result-card neo-pressed" style={{ padding: '24px' }}>
+            <h4 className="skills-heading match">
+              <span className="material-symbols-outlined">psychology</span>
+              Extracted Skills ({skills.length})
+            </h4>
+            <div className="skills-badges" style={{ marginTop: '16px' }}>
+              {skills.length === 0 ? (
+                <span className="empty-state">No technical skills found.</span>
+              ) : (
+                skills.map((skill, i) => (
+                  <span key={i} className="skill-badge match visible">{skill}</span>
+                ))
+              )}
             </div>
           </div>
         </div>
