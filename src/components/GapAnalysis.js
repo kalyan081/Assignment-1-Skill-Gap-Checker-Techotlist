@@ -181,7 +181,6 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData, 
             <span><span className="spinner"></span> Analyzing...</span>
           ) : (
             <>
-              <span className="material-symbols-outlined">analytics</span>
               <span>Analyse</span>
             </>
           )}
