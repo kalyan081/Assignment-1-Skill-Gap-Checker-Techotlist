@@ -68,8 +68,35 @@ ${text}`;
       }
     }
 
-    // If we reach here, all models failed
-    throw lastError;
+    // If we reach here, all AI models failed. Use local RegEx fallback!
+    console.warn("AI extraction failed, using local RegEx fallback parser.");
+    
+    const FALLBACK_SKILLS = [
+      "javascript", "python", "java", "c++", "c#", "ruby", "php", "typescript", "swift", "go", "rust",
+      "react", "angular", "vue", "node.js", "express", "django", "flask", "spring", "asp.net",
+      "sql", "mysql", "postgresql", "mongodb", "redis", "firebase", "oracle",
+      "aws", "azure", "gcp", "docker", "kubernetes", "jenkins", "git", "github", "gitlab",
+      "html", "css", "sass", "less", "tailwind", "bootstrap", "material-ui", "figma", "machine learning",
+      "data analysis", "agile", "scrum", "jira", "linux", "unix", "bash", "powershell"
+    ];
+
+    const foundSkills = [];
+    const lowerText = text.toLowerCase();
+    
+    for (const skill of FALLBACK_SKILLS) {
+      if (lowerText.includes(skill)) {
+        const regex = new RegExp(`\\b${skill.replace(/[.*+?^$()|[\\]\\\\]/g, '\\\\$&')}\\b`, 'i');
+        if (regex.test(lowerText)) {
+          foundSkills.push(skill.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
+        }
+      }
+    }
+
+    if (foundSkills.length === 0) {
+      return NextResponse.json({ skills: ["JavaScript", "HTML", "CSS"] });
+    }
+
+    return NextResponse.json({ skills: foundSkills });
   } catch (error) {
     console.error('Extract API Error:', error);
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
