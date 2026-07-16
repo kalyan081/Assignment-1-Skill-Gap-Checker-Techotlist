@@ -17,23 +17,19 @@ export default function Dashboard({ userName, history, onLoadAnalysis, onDeleteA
         </div>
       </div>
 
-      <div className="dashboard-grid">
-        <div className="dash-card neo-pressed">
-          <div className="dash-card-icon">
-            <span className="material-symbols-outlined">bar_chart</span>
-          </div>
-          <div className="dash-card-info">
-            <h4 id="dashTotalAnalyses">{totalAnalyses}</h4>
-            <p>TOTAL ANALYSES</p>
+      <div className="dashboard-stats neo-pressed">
+        <div className="stat-card neo-ext">
+          <span className="material-symbols-outlined">assessment</span>
+          <div className="stat-info">
+            <span className="stat-value">{totalAnalyses}</span>
+            <span className="stat-label">Total Analyses</span>
           </div>
         </div>
-        <div className="dash-card neo-pressed">
-          <div className="dash-card-icon">
-            <span className="material-symbols-outlined">trending_up</span>
-          </div>
-          <div className="dash-card-info">
-            <h4 id="dashAvgMatch">{avgMatch}%</h4>
-            <p>AVG MATCH SCORE</p>
+        <div className="stat-card neo-ext">
+          <span className="material-symbols-outlined">monitoring</span>
+          <div className="stat-info">
+            <span className="stat-value">{avgMatch}%</span>
+            <span className="stat-label">Avg Match Score</span>
           </div>
         </div>
       </div>

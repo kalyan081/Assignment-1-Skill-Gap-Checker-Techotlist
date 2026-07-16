@@ -20,7 +20,7 @@ export default function Header({ activeView, toggleTheme, onProfileModal }) {
           <h2 className="header-title">{titles[activeView] || 'Gap Analysis'}</h2>
         </div>
         <div className="header-right">
-          <button className="theme-toggle" id="themeToggleBtn" title="Toggle theme" onClick={toggleTheme}>
+          <button className="icon-btn" id="themeToggle" title="Toggle theme" onClick={toggleTheme}>
             <span className="material-symbols-outlined icon-sun">light_mode</span>
             <span className="material-symbols-outlined icon-moon">dark_mode</span>
           </button>
