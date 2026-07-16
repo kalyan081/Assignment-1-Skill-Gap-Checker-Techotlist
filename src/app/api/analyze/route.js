@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const MODEL = 'gemini-flash-latest';
+const MODEL = 'gemini-1.5-flash';
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 async function extractSkills(text, apiKey) {
@@ -24,7 +24,9 @@ ${text}`;
   });
 
   if (!response.ok) {
-    throw new Error('Failed to extract skills from AI');
+    const errorText = await response.text();
+    console.error('Gemini API Error:', errorText);
+    throw new Error(`Google API Error: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
