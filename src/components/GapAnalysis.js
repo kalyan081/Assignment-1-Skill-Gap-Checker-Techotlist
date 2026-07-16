@@ -192,11 +192,12 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData }
 
       {result && (
         <section className="results-section visible">
+          <div className="results-accent-bar"></div>
           <div className="results-grid">
-            <div className="result-card neo-pressed score-card">
-              <h4 className="skills-heading">
-                <span className="material-symbols-outlined">speed</span> Role Compatibility
-              </h4>
+            
+            {/* Left Column: Ring Section */}
+            <div className="ring-section">
+              <h4 className="ring-title">Role Compatibility</h4>
               <div className="ring-container neo-ext">
                 <div className="ring-inner neo-pressed">
                   <svg viewBox="0 0 256 256" aria-hidden="true">
@@ -219,64 +220,62 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData }
               </div>
             </div>
 
-            <div className="result-card neo-pressed">
-              <h4 className="skills-heading match">
-                <span className="material-symbols-outlined">check_circle</span> Matched Skills
-              </h4>
-              <div className="skills-badges">
-                {result.matchedSkills?.length === 0 ? (
-                  <span className="empty-state">No matching skills found</span>
-                ) : (
-                  result.matchedSkills?.map((skill, i) => (
-                    <span key={i} className="skill-badge match visible">{skill}</span>
-                  ))
-                )}
+            {/* Right Column: Skills Matrix */}
+            <div className="skills-matrix">
+              
+              {/* Matched Skills */}
+              <div className="skills-block">
+                <h4 className="skills-heading match">
+                  <span className="material-symbols-outlined">verified</span> Core Strengths
+                  <span className="skills-count">{result.matchedSkills?.length || 0}</span>
+                </h4>
+                <div className="skills-badges">
+                  {result.matchedSkills?.length === 0 ? (
+                    <span className="empty-state">No matching skills found</span>
+                  ) : (
+                    result.matchedSkills?.map((skill, i) => (
+                      <span key={i} className="skill-badge match visible">{skill}</span>
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className="result-card neo-pressed">
-              <h4 className="skills-heading gap">
-                <span className="material-symbols-outlined">error</span> Missing Skills
-              </h4>
-              <div className="skills-badges">
-                {result.missingSkills?.length === 0 ? (
-                  <span className="empty-state">No gaps — great match!</span>
-                ) : (
-                  result.missingSkills?.map((skill, i) => (
-                    <span key={i} className="skill-badge gap-skill visible">{skill}</span>
-                  ))
-                )}
+              {/* Missing Skills */}
+              <div className="skills-block">
+                <h4 className="skills-heading gap">
+                  <span className="material-symbols-outlined">error</span> Identified Gaps
+                  <span className="skills-count">{result.missingSkills?.length || 0}</span>
+                </h4>
+                <div className="skills-badges">
+                  {result.missingSkills?.length === 0 ? (
+                    <span className="empty-state">No gaps — great match!</span>
+                  ) : (
+                    result.missingSkills?.map((skill, i) => (
+                      <span key={i} className="skill-badge gap-skill visible">{skill}</span>
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
-          
-          <div className="result-card insight-card neo-pressed" style={{ marginTop: '24px' }}>
-            <h4 className="skills-heading">
-              <span className="material-symbols-outlined">gavel</span> Fit Verdict
-            </h4>
-            
-            <div style={{ marginBottom: '16px' }}>
-              <span className="skill-badge match visible" style={{ 
-                fontSize: '16px', 
-                padding: '8px 16px',
-                background: result.verdict === 'Qualified' ? 'rgba(34, 197, 94, 0.15)' : 
-                            result.verdict === 'Almost There' ? 'rgba(245, 158, 11, 0.15)' : 
-                            'rgba(239, 68, 68, 0.15)',
-                color: result.verdict === 'Qualified' ? '#4ade80' : 
-                       result.verdict === 'Almost There' ? '#fbbf24' : 
-                       '#f87171',
-                border: '1px solid currentColor'
-              }}>
-                {result.verdict || 'Unknown'}
-              </span>
-            </div>
 
-            <div className="insight-text" style={{ paddingLeft: '8px' }}>
-              <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.6' }}>
-                {result.reasons?.map((reason, idx) => (
-                  <li key={idx} style={{ marginBottom: '8px' }}>{reason}</li>
-                )) || <li>No reasons provided.</li>}
-              </ul>
+              {/* Insight Card (Fit Verdict) */}
+              <div className="insight-card neo-pressed">
+                <div className="insight-header">
+                  <span className="material-symbols-outlined">gavel</span>
+                  <span className="insight-label">Fit Verdict: <span style={{ 
+                    color: result.verdict === 'Qualified' ? 'var(--success-color)' : 
+                           result.verdict === 'Almost There' ? 'var(--warning-color)' : 
+                           'var(--danger-color)'
+                  }}>{result.verdict || 'Unknown'}</span></span>
+                </div>
+                <div className="insight-text">
+                  <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.6' }}>
+                    {result.reasons?.map((reason, idx) => (
+                      <li key={idx} style={{ marginBottom: '8px' }}>{reason}</li>
+                    )) || <li>No reasons provided.</li>}
+                  </ul>
+                </div>
+              </div>
+              
             </div>
           </div>
         </section>
