@@ -78,11 +78,9 @@ export default function Home() {
 
 
   const handleDeleteAnalysis = (id) => {
-    if (confirm('Delete this analysis?')) {
-      const newHistory = history.filter(h => h.id !== id);
-      setHistory(newHistory);
-      localStorage.setItem('skillLens_history', JSON.stringify(newHistory));
-    }
+    const newHistory = history.filter(h => h.id !== id);
+    setHistory(newHistory);
+    localStorage.setItem('skillLens_history', JSON.stringify(newHistory));
   };
 
   const handleLogin = (e) => {
