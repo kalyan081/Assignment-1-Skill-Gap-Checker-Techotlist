@@ -6,7 +6,6 @@ import Header from '@/components/Header';
 import Dashboard from '@/components/Dashboard';
 import GapAnalysis from '@/components/GapAnalysis';
 import SkillExtraction from '@/components/SkillExtraction';
-import LearningPath from '@/components/LearningPath';
 
 export default function Home() {
   const [activeView, setActiveView] = useState('view-gap-analysis');
@@ -120,10 +119,6 @@ export default function Home() {
               loadedData={activeView === 'view-gap-analysis' ? lastResult : null}
             />
           </div>
-          
-          <div style={{ display: activeView === 'view-learning-path' ? 'block' : 'none' }}>
-            <LearningPath lastResult={lastResult} />
-          </div>
         </div>
       </main>
 
@@ -160,7 +155,6 @@ export default function Home() {
             <ul style={{ paddingLeft: '20px', margin: '20px 0', lineHeight: '1.6' }}>
               <li><strong>Gap Analysis:</strong> Compare a resume against a JD.</li>
               <li><strong>Skill Extraction:</strong> Just extract skills from any text block.</li>
-              <li><strong>Learning Path:</strong> Get a curriculum to cover missing skills.</li>
             </ul>
             <button className="btn-primary" style={{ width: '100%' }} onClick={() => setShowHelpModal(false)}>Got it!</button>
           </div>

@@ -7,7 +7,6 @@ export default function Sidebar({ activeView, setActiveView, onHelpModal }) {
     { id: 'view-dashboard', icon: 'home', label: 'Dashboard' },
     { id: 'view-skill-analysis', icon: 'bar_chart', label: 'Skill Analysis' },
     { id: 'view-gap-analysis', icon: 'query_stats', label: 'Gap Analysis' },
-    { id: 'view-learning-path', icon: 'auto_stories', label: 'Learning Path' },
   ];
 
   return (

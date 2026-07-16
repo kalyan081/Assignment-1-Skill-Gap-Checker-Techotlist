@@ -6,8 +6,7 @@ export default function Header({ activeView, toggleTheme, onProfileModal }) {
   const titles = {
     'view-dashboard': 'Dashboard',
     'view-skill-analysis': 'Skill Extraction',
-    'view-gap-analysis': 'Gap Analysis',
-    'view-learning-path': 'Learning Path'
+    'view-gap-analysis': 'Gap Analysis'
   };
 
   return (
