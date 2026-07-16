@@ -5,7 +5,7 @@ import "./globals.css";
 const manrope = Manrope({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "SkillLens - AI Skill Gap Analyzer",
+  title: "Techotlist Assignment -1 Skill Gap Checker",
   description: "AI powered skill gap analysis",
 };
 

@@ -1,4 +1,4 @@
-# SkillLens AI - Techotlist Assignment
+# Techotlist Assignment -1 Skill Gap Checker
 
 A modern, AI-powered Next.js application that evaluates a candidate's fit for a role based on their resume and a Job Description. This project fulfills the requirements for **Assignment 1 (Skill Gap Checker)** and **Assignment 2 (Fit Verdict)**.
 

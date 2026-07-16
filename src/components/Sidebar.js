@@ -14,9 +14,9 @@ export default function Sidebar({ activeView, setActiveView, onHelpModal }) {
     <aside className="sidebar" id="sidebar">
       <div className="sidebar-brand">
         <div className="sidebar-brand-icon">
-          <span className="material-symbols-outlined">visibility</span>
+          <span className="material-symbols-outlined brand-icon">visibility</span>
         </div>
-        <h1>SkillLens</h1>
+        <h1 style={{ fontSize: '18px' }}>Techotlist Assignment -1 Skill Gap Checker</h1>
       </div>
       <nav className="sidebar-nav">
         {links.map((link) => (
