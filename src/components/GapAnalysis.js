@@ -195,13 +195,27 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData }
           <div className="results-grid">
             <div className="result-card neo-pressed score-card">
               <h4 className="skills-heading">
-                <span className="material-symbols-outlined">speed</span> Match Score
+                <span className="material-symbols-outlined">speed</span> Role Compatibility
               </h4>
-              <div className="score-ring-container">
-                <div className="score-ring">
-                  <span className="score-text">{result.matchPercentage}%</span>
+              <div className="ring-container neo-ext">
+                <div className="ring-inner neo-pressed">
+                  <svg viewBox="0 0 256 256" aria-hidden="true">
+                    <circle className="ring-track" cx="128" cy="128" r="110" fill="transparent" stroke="currentColor" strokeWidth="14" />
+                    <circle
+                      className="ring-progress"
+                      cx="128" cy="128" r="110"
+                      fill="transparent" stroke="currentColor"
+                      strokeWidth="14"
+                      strokeDasharray="691.15"
+                      strokeDashoffset={691.15 - (result.matchPercentage / 100) * 691.15}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="ring-center">
+                    <span className="ring-percentage">{result.matchPercentage}%</span>
+                    <span className="ring-label">{getLabel(result.matchPercentage)}</span>
+                  </div>
                 </div>
-                <div className="score-label">{getLabel(result.matchPercentage)}</div>
               </div>
             </div>
 
