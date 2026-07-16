@@ -49,16 +49,6 @@ export default function Sidebar({ activeView, setActiveView, onHelpModal }) {
           <span className="material-symbols-outlined">help</span>
           Help
         </a>
-        <a href="#" className="nav-link" id="logoutLink" onClick={(e) => {
-          e.preventDefault();
-          if(confirm('Are you sure you want to log out? This will clear all history and settings.')) {
-            localStorage.clear();
-            window.location.reload();
-          }
-        }}>
-          <span className="material-symbols-outlined">logout</span>
-          Logout
-        </a>
       </div>
     </aside>
   );
