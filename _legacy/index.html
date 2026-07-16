@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillLens — AI Skill Gap Analyzer</title>
+  <meta name="description" content="AI-powered skill gap analyzer. Compare your resume against job descriptions to identify matched skills, gaps, and get strategic hiring insights." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <!-- PDF.js for PDF text extraction (legacy build) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <!-- Mammoth.js for DOCX text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ===================== TOAST CONTAINER ===================== -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  </div>
+
+  <!-- ===================== MOBILE SIDEBAR OVERLAY ===================== -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ===================== APP SHELL ===================== -->
+  <div class="app-shell">
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon neo-ext">
+          <span class="material-symbols-outlined">visibility</span>
+        </div>
+        <h1>SkillLens</h1>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebarNav">
+        <a class="nav-link" href="#" data-page="view-dashboard">
+          <span class="material-symbols-outlined">dashboard</span>
+          <span>Dashboard</span>
+        </a>
+        <a class="nav-link" href="#" data-page="view-skill-analysis">
+          <span class="material-symbols-outlined">analytics</span>
+          <span>Skill Analysis</span>
+        </a>
+        <a class="nav-link active" href="#" data-page="view-gap-analysis">
+          <span class="material-symbols-outlined">query_stats</span>
+          <span>Gap Analysis</span>
+        </a>
+        <a class="nav-link" href="#" data-page="view-learning-path">
+          <span class="material-symbols-outlined">auto_stories</span>
+          <span>Learning Path</span>
+        </a>
+      </nav>
+
+      <div class="pro-tip neo-pressed">
+        <p class="pro-tip-label">Pro Tip</p>
+        <p class="pro-tip-text">Paste real resume text and a full job posting for the most accurate analysis.</p>
+        <button class="pro-tip-btn neo-ext" id="reAnalyzeBtn">Re-Analyze</button>
+      </div>
+
+      <div class="sidebar-footer">
+        <a class="nav-link" href="#" id="helpLink">
+          <span class="material-symbols-outlined">help</span>
+          <span>Help</span>
+        </a>
+        <a class="nav-link" href="#" id="logoutLink">
+          <span class="material-symbols-outlined">logout</span>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN ========== -->
+    <main class="main-content">
+
+      <!-- HEADER -->
+      <header class="app-header">
+        <div class="header-inner">
+          <div class="header-left">
+            <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">
+              <span class="material-symbols-outlined">menu</span>
+            </button>
+            <h2 class="header-title">Gap Analysis</h2>
+          </div>
+          <div class="header-right">
+            <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle light/dark theme">
+              <span class="material-symbols-outlined icon-sun">light_mode</span>
+              <span class="material-symbols-outlined icon-moon">dark_mode</span>
+            </button>
+            <button class="icon-btn" title="Notifications" aria-label="Notifications">
+              <span class="material-symbols-outlined">notifications</span>
+            </button>
+            <div class="header-avatar" title="Profile">
+              <div class="avatar-circle">J</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT WRAPPER -->
+      <div class="page-content" id="pageContent">
+
+        <!-- ===================== VIEW: DASHBOARD ===================== -->
+        <section id="view-dashboard" class="view-section hidden">
+          <div class="hero">
+            <div class="hero-text">
+              <h3 class="hero-greeting user-greeting">Hello, there!</h3>
+              <p class="hero-tagline">Your skills overview and recent activity.</p>
+            </div>
+          </div>
+          
+          <div class="dashboard-stats neo-pressed">
+            <div class="stat-card neo-ext">
+              <span class="material-symbols-outlined">assessment</span>
+              <div class="stat-info">
+                <span class="stat-value" id="dashTotalAnalyses">0</span>
+                <span class="stat-label">Total Analyses</span>
+              </div>
+            </div>
+            <div class="stat-card neo-ext">
+              <span class="material-symbols-outlined">monitoring</span>
+              <div class="stat-info">
+                <span class="stat-value" id="dashAvgMatch">0%</span>
+                <span class="stat-label">Avg Match Score</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-recent neo-pressed">
+            <h4 class="section-heading">
+              <span class="material-symbols-outlined">history</span>
+              Recent Analyses
+            </h4>
+            <div class="history-list" id="dashboardHistoryList">
+              <p class="empty-state">No analyses yet.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================== VIEW: SKILL ANALYSIS ===================== -->
+        <section id="view-skill-analysis" class="view-section hidden">
+          <div class="hero">
+            <div class="hero-text">
+              <h3 class="hero-greeting">Skill Extraction</h3>
+              <p class="hero-tagline">Extract and categorize technical skills from any text.</p>
+            </div>
+          </div>
+          <div class="input-card neo-pressed" style="margin-top: 24px;">
+            <textarea id="singleSkillInput" placeholder="Paste a resume, job description, or any text here..." style="min-height: 200px;"></textarea>
+          </div>
+          <div class="cta-wrapper" style="margin-top: 24px;">
+            <button class="btn-analyze" id="extractSkillsBtn">
+              <span class="material-symbols-outlined" id="extractBtnIcon">auto_awesome</span>
+              <span id="extractBtnText">Extract Skills</span>
+            </button>
+          </div>
+          <div id="extractionResults" class="results-section hidden" style="margin-top: 24px;">
+            <!-- Render extracted skills here -->
+          </div>
+        </section>
+
+        <!-- ===================== VIEW: GAP ANALYSIS ===================== -->
+        <section id="view-gap-analysis" class="view-section active">
+          <!-- HERO -->
+          <section class="hero" id="heroSection">
+            <div class="hero-text">
+              <h3 class="hero-greeting user-greeting" id="heroGreeting">Hello, there!</h3>
+              <p class="hero-tagline">Mapping your path with <span class="accent">SkillLens</span> precision.</p>
+            </div>
+          <div class="hero-actions">
+            <button class="btn btn-ghost" id="saveReportBtn" disabled>
+              <span class="material-symbols-outlined">download</span>
+              Save Report
+            </button>
+            <button class="btn btn-primary" id="shareBtn" disabled>
+              <span class="material-symbols-outlined">share</span>
+              Share Analysis
+            </button>
+          </div>
+        </section>
+
+        <!-- INPUT SECTION -->
+        <section class="input-grid">
+          <!-- Resume -->
+          <div class="input-group">
+            <label class="input-label" for="resumeInput">
+              <span class="material-symbols-outlined">description</span>
+              Candidate Resume
+            </label>
+            <div class="input-card neo-pressed" id="resumeCard">
+              <textarea id="resumeInput" placeholder="Paste the candidate's full resume text here..."></textarea>
+              <div class="input-card-footer">
+                <span class="input-card-hint" id="resumeCharCount">Supports PDF, DOCX, TXT</span>
+                <button class="icon-btn-sm neo-ext" id="uploadResumeBtn" title="Upload resume (PDF, DOCX, TXT)">
+                  <span class="material-symbols-outlined">upload_file</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- JD -->
+          <div class="input-group">
+            <label class="input-label" for="jdInput">
+              <span class="material-symbols-outlined">work</span>
+              Job Description
+            </label>
+            <div class="input-card neo-pressed" id="jdCard">
+              <textarea id="jdInput" placeholder="Paste the full job description / requirements here..."></textarea>
+              <div class="input-card-footer">
+                <span class="input-card-hint" id="jdCharCount">0 characters</span>
+                <button class="icon-btn-sm neo-ext" id="clearJdBtn" title="Clear text">
+                  <span class="material-symbols-outlined">backspace</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <div class="cta-wrapper">
+          <button class="btn-analyze" id="analyzeBtn">
+            <span class="material-symbols-outlined" id="analyzeBtnIcon">rocket_launch</span>
+            <span id="analyzeBtnText">Analyze Candidate Fit</span>
+          </button>
+          <p class="cta-hint">or press <kbd>Ctrl</kbd> + <kbd>Enter</kbd></p>
+        </div>
+
+        <!-- RESULTS -->
+        <section class="results-section hidden" id="resultsSection">
+          <div class="results-accent-bar"></div>
+          <div class="results-grid">
+
+            <!-- Ring -->
+            <div class="ring-section">
+              <h4 class="ring-title">Role Compatibility</h4>
+              <div class="ring-container neo-ext">
+                <div class="ring-inner neo-pressed">
+                  <svg viewBox="0 0 256 256" aria-hidden="true">
+                    <circle class="ring-track" cx="128" cy="128" r="110" fill="transparent" stroke="currentColor" stroke-width="14" />
+                    <circle
+                      class="ring-progress"
+                      id="ringProgress"
+                      cx="128" cy="128" r="110"
+                      fill="transparent" stroke="currentColor"
+                      stroke-width="14"
+                      stroke-dasharray="691.15"
+                      stroke-dashoffset="691.15"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                  <div class="ring-center">
+                    <span class="ring-percentage" id="ringPercentage">0%</span>
+                    <span class="ring-label" id="ringLabel">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Skills -->
+            <div class="skills-matrix">
+              <!-- Matched -->
+              <div class="skills-block">
+                <h4 class="skills-heading match">
+                  <span class="material-symbols-outlined">verified</span>
+                  Core Strengths
+                  <span class="skills-count" id="matchCount">0</span>
+                </h4>
+                <div class="skills-badges" id="matchedBadges">
+                  <span class="empty-state">Run analysis to see matched skills</span>
+                </div>
+              </div>
+              <!-- Missing -->
+              <div class="skills-block">
+                <h4 class="skills-heading gap">
+                  <span class="material-symbols-outlined">error</span>
+                  Identified Gaps
+                  <span class="skills-count" id="gapCount">0</span>
+                </h4>
+                <div class="skills-badges" id="missingBadges">
+                  <span class="empty-state">Run analysis to see skill gaps</span>
+                </div>
+              </div>
+              <!-- Insight -->
+              <div class="insight-card neo-pressed">
+                <div class="insight-header">
+                  <span class="material-symbols-outlined">auto_awesome</span>
+                  <span class="insight-label">Strategic Insight</span>
+                </div>
+                <p class="insight-text" id="insightText">
+                  Paste a resume and job description above, then click <strong>"Analyze Candidate Fit"</strong> to receive AI-powered insights.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- HISTORY -->
+        <section class="history-section" id="historySection">
+          <h4 class="section-heading">
+            <span class="material-symbols-outlined">history</span>
+            Recent Analyses
+          </h4>
+          <div class="history-list" id="historyList">
+            <p class="empty-state">No analyses yet. Run your first one above!</p>
+          </div>
+        </section>
+
+        </section>
+
+        <!-- ===================== VIEW: LEARNING PATH ===================== -->
+        <section id="view-learning-path" class="view-section hidden">
+          <div class="hero">
+            <div class="hero-text">
+              <h3 class="hero-greeting">Learning Path</h3>
+              <p class="hero-tagline">AI-generated curriculum based on your skill gaps.</p>
+            </div>
+            <div class="hero-actions">
+              <button class="btn btn-primary" id="generatePathBtn">
+                <span class="material-symbols-outlined">school</span>
+                Generate Curriculum
+              </button>
+            </div>
+          </div>
+          <div class="learning-path-content neo-pressed hidden" id="learningPathResult" style="margin-top: 24px; padding: 24px; border-radius: var(--radius-xl);">
+            <!-- Render markdown learning path here -->
+          </div>
+          <div id="learningPathEmpty" class="empty-state" style="margin-top: 40px; text-align: center;">
+            Run a Gap Analysis first, then come here to generate a custom learning path.
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ===================== MOBILE NAV ===================== -->
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <a href="#" class="mobile-nav-link" data-page="view-dashboard" aria-label="Dashboard">
+      <span class="material-symbols-outlined">home</span>
+    </a>
+    <a href="#" class="mobile-nav-link active" data-page="view-gap-analysis" aria-label="Gap Analysis">
+      <span class="material-symbols-outlined">query_stats</span>
+    </a>
+    <a href="#" class="mobile-nav-link" data-page="view-learning-path" aria-label="Learning Path">
+      <span class="material-symbols-outlined">auto_stories</span>
+    </a>
+  </nav>
+
+  <!-- ===================== PROFILE MODAL ===================== -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal-content">
+      <div class="modal-icon">
+        <span class="material-symbols-outlined">person</span>
+      </div>
+      <h2 class="modal-title">Your Profile</h2>
+      <p class="modal-desc">Enter your name to personalize your experience.</p>
+      <div class="modal-field">
+        <label class="modal-field-label" for="userNameInput">Name</label>
+        <input type="text" class="modal-input" id="userNameInput" placeholder="e.g. Jordan" autocomplete="off" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="profileCancelBtn">Cancel</button>
+        <button class="btn btn-primary" id="profileSaveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== HELP MODAL ===================== -->
+  <div class="modal-overlay" id="helpModal">
+    <div class="modal-content" style="max-width: 500px;">
+      <h2 class="modal-title">How to use SkillLens</h2>
+      <div class="insight-text" style="margin-top: 16px;">
+        <p><strong>1. Configure API:</strong> Click the gear icon to add your Gemini API Key.</p>
+        <p><strong>2. Gap Analysis:</strong> Paste your resume and a job description to see how well you match.</p>
+        <p><strong>3. Skill Analysis:</strong> Extract skills from a single document without comparison.</p>
+        <p><strong>4. Learning Path:</strong> After a Gap Analysis, generate a study plan for your missing skills.</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="helpCloseBtn">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden file input -->
+  <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt,.text" style="display:none" />
+
+  <!-- Scripts (order matters) -->
+  <script src="js/theme.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
