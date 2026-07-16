@@ -10,6 +10,8 @@ import SkillExtraction from '@/components/SkillExtraction';
 export default function Home() {
   const [activeView, setActiveView] = useState('view-gap-analysis');
   const [userName, setUserName] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [theme, setTheme] = useState('dark');
   const [history, setHistory] = useState([]);
   const [lastResult, setLastResult] = useState(null);
@@ -20,7 +22,10 @@ export default function Home() {
   useEffect(() => {
     // Load state from localStorage on mount
     const savedName = localStorage.getItem('skillLens_userName');
-    if (savedName) setUserName(savedName);
+    if (savedName) {
+      setUserName(savedName);
+      setIsLoggedIn(true);
+    }
 
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
@@ -34,6 +39,8 @@ export default function Home() {
       const h = JSON.parse(localStorage.getItem('skillLens_history')) || [];
       setHistory(h);
     } catch (e) {}
+
+    setIsInitialized(true);
   }, []);
 
   const toggleTheme = () => {
@@ -79,6 +86,54 @@ export default function Home() {
       localStorage.setItem('skillLens_history', JSON.stringify(newHistory));
     }
   };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const name = formData.get('name').trim();
+    if (name) {
+      setUserName(name);
+      localStorage.setItem('skillLens_userName', name);
+      setIsLoggedIn(true);
+    }
+  };
+
+  if (!isInitialized) return null;
+
+  if (!isLoggedIn) {
+    return (
+      <div className="modal-overlay active" style={{ background: 'var(--bg)' }}>
+        <div className="modal-content">
+          <div className="modal-icon">
+            <span className="material-symbols-outlined">login</span>
+          </div>
+          <h2 className="modal-title">Welcome</h2>
+          <p className="modal-desc">Please enter your name to continue.</p>
+          <div style={{ fontSize: '12.5px', color: 'var(--gap)', marginTop: '-8px', marginBottom: '24px', textAlign: 'center', opacity: 0.9 }}>
+            <em>Disclaimer: This is not a real login for authentication. It only saves your name locally for personalization.</em>
+          </div>
+          <form onSubmit={handleLogin}>
+            <div className="modal-field">
+              <label className="modal-field-label" htmlFor="loginNameInput">Name</label>
+              <input 
+                type="text"
+                name="name"
+                id="loginNameInput"
+                className="modal-input" 
+                placeholder="e.g. Jordan" 
+                autoComplete="off"
+                autoFocus
+                required
+              />
+            </div>
+            <div className="modal-actions" style={{ justifyContent: 'center' }}>
+              <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Continue</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app-shell">
