@@ -34,7 +34,7 @@ export default function Dashboard({ userName, history, onLoadAnalysis, onDeleteA
         </div>
       </div>
 
-      <div className="history-section neo-pressed">
+      <div className="dashboard-recent neo-pressed">
         <h4 className="section-heading">
           <span className="material-symbols-outlined">history</span>
           Recent Analyses
