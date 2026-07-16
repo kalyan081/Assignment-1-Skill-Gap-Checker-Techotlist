@@ -128,20 +128,33 @@ No markdown fences.`;
         }
       };
 
-      const vResponse = await fetch(`${BASE_URL}/${MODEL}:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(vPayload)
-      });
+      let vText = null;
+      for (const model of MODELS) {
+        try {
+          const vResponse = await fetch(`${BASE_URL}/${model}:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(vPayload)
+          });
 
-      if (vResponse.ok) {
-        const vData = await vResponse.json();
-        const vText = vData.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (vText) {
+          if (vResponse.ok) {
+            const vData = await vResponse.json();
+            vText = vData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (vText) break;
+          }
+        } catch (e) {
+          // ignore and try next model
+        }
+      }
+
+      if (vText) {
+        try {
           const vJson = JSON.parse(vText);
           verdict = vJson.verdict;
           reasons = vJson.reasons;
           strategicInsight = reasons.join(' ');
+        } catch (e) {
+          console.error("Failed to parse verdict JSON:", e);
         }
       }
     } else {
