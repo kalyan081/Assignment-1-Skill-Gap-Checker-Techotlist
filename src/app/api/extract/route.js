@@ -83,9 +83,11 @@ ${text}`;
     const foundSkills = [];
     const lowerText = text.toLowerCase();
     
+    const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
     for (const skill of FALLBACK_SKILLS) {
       if (lowerText.includes(skill)) {
-        const regex = new RegExp(`\\b${skill.replace(/[.*+?^$()|[\\]\\\\]/g, '\\\\$&')}\\b`, 'i');
+        const regex = new RegExp(`(^|[^a-z0-9])${escapeRegExp(skill)}([^a-z0-9]|$)`, 'i');
         if (regex.test(lowerText)) {
           foundSkills.push(skill.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
         }

@@ -65,10 +65,12 @@ ${text}`;
   const foundSkills = [];
   const lowerText = text.toLowerCase();
   
+  const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  
   for (const skill of FALLBACK_SKILLS) {
     if (lowerText.includes(skill)) {
-      // Basic check for word boundaries to avoid partial matches
-      const regex = new RegExp(`\\b${skill.replace(/[.*+?^$()|[\\]\\\\]/g, '\\\\$&')}\\b`, 'i');
+      // Robust boundary check that works for C++ and Node.js
+      const regex = new RegExp(`(^|[^a-z0-9])${escapeRegExp(skill)}([^a-z0-9]|$)`, 'i');
       if (regex.test(lowerText)) {
         // Capitalize nicely
         foundSkills.push(skill.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
