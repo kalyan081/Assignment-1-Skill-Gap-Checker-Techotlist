@@ -26,9 +26,6 @@ export default function Header({ activeView, toggleTheme, onProfileModal }) {
           <button className="icon-btn" title="Notifications" aria-label="Notifications">
             <span className="material-symbols-outlined">notifications</span>
           </button>
-          <div className="header-avatar" title="Profile" onClick={onProfileModal}>
-            <div className="avatar-circle">J</div>
-          </div>
         </div>
       </div>
     </header>

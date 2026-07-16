@@ -16,7 +16,6 @@ export default function Home() {
   const [history, setHistory] = useState([]);
   const [lastResult, setLastResult] = useState(null);
   
-  const [showProfileModal, setShowProfileModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
 
   useEffect(() => {
@@ -69,15 +68,6 @@ export default function Home() {
     localStorage.setItem('skillLens_history', JSON.stringify(newHistory));
   };
 
-  const handleSaveProfile = (e) => {
-    e.preventDefault();
-    const name = e.target.name.value.trim();
-    if (name) {
-      setUserName(name);
-      localStorage.setItem('skillLens_userName', name);
-    }
-    setShowProfileModal(false);
-  };
 
   const handleDeleteAnalysis = (id) => {
     if (confirm('Delete this analysis?')) {
@@ -147,7 +137,6 @@ export default function Home() {
         <Header 
           activeView={activeView} 
           toggleTheme={toggleTheme}
-          onProfileModal={() => setShowProfileModal(true)}
         />
         
         <div className="page-content">
@@ -178,37 +167,6 @@ export default function Home() {
       </main>
 
       {/* Modals */}
-      {showProfileModal && (
-        <div className="modal-overlay active">
-          <div className="modal-content">
-            <div className="modal-icon">
-              <span className="material-symbols-outlined">person</span>
-            </div>
-            <h2 className="modal-title">Your Profile</h2>
-            <p className="modal-desc">Enter your name to personalize your experience.</p>
-            <form onSubmit={handleSaveProfile}>
-              <div className="modal-field">
-                <label className="modal-field-label" htmlFor="userNameInput">Name</label>
-                <input 
-                  type="text"
-                  name="name"
-                  id="userNameInput"
-                  className="modal-input" 
-                  placeholder="e.g. Jordan" 
-                  defaultValue={userName}
-                  autoComplete="off"
-                  autoFocus
-                />
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="btn btn-ghost" onClick={() => setShowProfileModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Save</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {showHelpModal && (
         <div className="modal-overlay active">
           <div className="modal-content" style={{ maxWidth: '500px' }}>
