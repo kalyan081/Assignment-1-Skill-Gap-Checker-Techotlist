@@ -16,6 +16,7 @@ export default function Home() {
   const [history, setHistory] = useState([]);
   const [lastResult, setLastResult] = useState(null);
   const [lastSnippet, setLastSnippet] = useState(null);
+  const [sharedResumeText, setSharedResumeText] = useState('');
   
   const [showHelpModal, setShowHelpModal] = useState(false);
 
@@ -160,7 +161,10 @@ export default function Home() {
           </div>
           
           <div style={{ display: activeView === 'view-skill-analysis' ? 'block' : 'none' }}>
-            <SkillExtraction />
+            <SkillExtraction 
+              sharedText={sharedResumeText}
+              setSharedText={setSharedResumeText}
+            />
           </div>
           
           <div style={{ display: activeView === 'view-gap-analysis' ? 'block' : 'none' }}>
@@ -169,6 +173,8 @@ export default function Home() {
               onAnalysisComplete={handleAnalysisComplete}
               onSaveReport={handleSaveReport}
               loadedData={activeView === 'view-gap-analysis' ? lastResult : null}
+              sharedText={sharedResumeText}
+              setSharedText={setSharedResumeText}
             />
           </div>
         </div>

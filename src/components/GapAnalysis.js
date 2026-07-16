@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 
-export default function GapAnalysis({ userName, onAnalysisComplete, loadedData, onSaveReport }) {
-  const [resumeText, setResumeText] = useState(loadedData?.resumeSnippet || '');
+export default function GapAnalysis({ userName, onAnalysisComplete, loadedData, onSaveReport, sharedText, setSharedText }) {
   const [jdText, setJdText] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(loadedData?.data || null);
@@ -19,7 +18,7 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData, 
   }, [loadedData]);
 
   const handleAnalyze = async () => {
-    if (!resumeText.trim() || !jdText.trim()) {
+    if (!sharedText.trim() || !jdText.trim()) {
       setError('Please provide both a resume and a job description.');
       return;
     }
@@ -32,14 +31,14 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData, 
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resume: resumeText, jd: jdText })
+        body: JSON.stringify({ resume: sharedText, jd: jdText })
       });
       const data = await res.json();
       
       if (!res.ok) throw new Error(data.error || 'Failed to analyze');
       
       setResult(data);
-      onAnalysisComplete(data, resumeText);
+      onAnalysisComplete(data, sharedText);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -91,7 +90,7 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData, 
       if (!text) {
         setResumeHint('No text extracted.');
       } else {
-        setResumeText(text);
+        setSharedText(text);
         setResumeHint(`${text.length.toLocaleString()} characters extracted`);
       }
     } catch (err) {
@@ -130,8 +129,8 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData, 
             <textarea
               id="resumeInput"
               placeholder="Paste the candidate's full resume text here..."
-              value={resumeText}
-              onChange={(e) => setResumeText(e.target.value)}
+              value={sharedText}
+              onChange={(e) => setSharedText(e.target.value)}
             />
             <div className="input-card-footer">
               <span className="input-card-hint">{resumeHint}</span>
