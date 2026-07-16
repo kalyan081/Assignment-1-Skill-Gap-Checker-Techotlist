@@ -14,8 +14,8 @@ export default function Sidebar({ activeView, setActiveView, onHelpModal }) {
       <div className="sidebar-brand">
         <h1 style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '4px', lineHeight: '1.2' }}>
           <span style={{ fontWeight: 'bold', fontSize: '2em' }}>Techotlist</span>
-          <span style={{ fontSize: '1.5em' }}>Assignment - 1</span>
-          <span style={{ fontSize: '1em' }}>Skill gap checker</span>
+          <span style={{ fontSize: '1.5em' }}>Assignment - 1 & 2</span>
+          <span style={{ fontSize: '1em' }}>Skill & Fit Analyzer</span>
         </h1>
       </div>
       <nav className="sidebar-nav">

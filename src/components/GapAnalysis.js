@@ -105,7 +105,7 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData, 
       <section className="hero" id="heroSection">
         <div className="hero-text">
           <h3 className="hero-greeting user-greeting" id="heroGreeting">Hello, {userName || 'there'}!</h3>
-          <p className="hero-tagline">Mapping your path for <span className="accent">Techotlist Assignment -1 Skill Gap Checker</span>.</p>
+          <p className="hero-tagline">Mapping your path for <span className="accent">Techotlist Assignment - 1 & 2 Skill & Fit Analyzer</span>.</p>
         </div>
         <div className="hero-actions">
           <button className="btn btn-ghost" id="saveReportBtn" disabled={!result} onClick={onSaveReport}>
