@@ -126,20 +126,29 @@ export default function Home() {
       {showProfileModal && (
         <div className="modal-overlay active">
           <div className="modal-content">
-            <button className="modal-close" onClick={() => setShowProfileModal(false)}>
-              <span className="material-symbols-outlined">close</span>
-            </button>
-            <h3 className="modal-title">Your Profile</h3>
-            <p className="modal-subtitle">Personalize your experience</p>
+            <div className="modal-icon">
+              <span className="material-symbols-outlined">person</span>
+            </div>
+            <h2 className="modal-title">Your Profile</h2>
+            <p className="modal-desc">Enter your name to personalize your experience.</p>
             <form onSubmit={handleSaveProfile}>
-              <input 
-                name="name"
-                className="modal-input neo-pressed" 
-                placeholder="Enter your name..." 
-                defaultValue={userName}
-                autoFocus
-              />
-              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '16px' }}>Save Profile</button>
+              <div className="modal-field">
+                <label className="modal-field-label" htmlFor="userNameInput">Name</label>
+                <input 
+                  type="text"
+                  name="name"
+                  id="userNameInput"
+                  className="modal-input" 
+                  placeholder="e.g. Jordan" 
+                  defaultValue={userName}
+                  autoComplete="off"
+                  autoFocus
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn btn-ghost" onClick={() => setShowProfileModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Save</button>
+              </div>
             </form>
           </div>
         </div>
@@ -147,16 +156,16 @@ export default function Home() {
 
       {showHelpModal && (
         <div className="modal-overlay active">
-          <div className="modal-content">
-            <button className="modal-close" onClick={() => setShowHelpModal(false)}>
-              <span className="material-symbols-outlined">close</span>
-            </button>
-            <h3 className="modal-title">Help Guide</h3>
-            <ul style={{ paddingLeft: '20px', margin: '20px 0', lineHeight: '1.6' }}>
-              <li><strong>Gap Analysis:</strong> Compare a resume against a JD.</li>
-              <li><strong>Skill Extraction:</strong> Just extract skills from any text block.</li>
-            </ul>
-            <button className="btn-primary" style={{ width: '100%' }} onClick={() => setShowHelpModal(false)}>Got it!</button>
+          <div className="modal-content" style={{ maxWidth: '500px' }}>
+            <h2 className="modal-title">How to use SkillLens</h2>
+            <div className="insight-text" style={{ marginTop: '16px' }}>
+              <p><strong>1. Configure API:</strong> Add your Gemini API Key via the `.env.local` file.</p>
+              <p><strong>2. Gap Analysis:</strong> Paste your resume and a job description to see how well you match.</p>
+              <p><strong>3. Skill Analysis:</strong> Extract skills from a single document without comparison.</p>
+            </div>
+            <div className="modal-actions">
+              <button className="btn btn-primary" onClick={() => setShowHelpModal(false)}>Got it</button>
+            </div>
           </div>
         </div>
       )}
