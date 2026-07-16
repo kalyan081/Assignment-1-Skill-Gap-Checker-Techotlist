@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 
-const MODEL = 'gemini-3.5-flash';
+const MODELS = [
+  'gemini-3.5-flash',
+  'gemini-3-flash-preview',
+  'gemini-2.0-flash',
+  'gemini-flash-latest'
+];
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 async function extractSkills(text, apiKey) {
@@ -17,23 +22,35 @@ ${text}`;
     }
   };
 
-  const response = await fetch(`${BASE_URL}/${MODEL}:generateContent?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
+  let lastError = null;
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Gemini API Error:', errorText);
-    throw new Error(`Google API Error: ${response.status} - ${errorText}`);
+  for (const model of MODELS) {
+    try {
+      const response = await fetch(`${BASE_URL}/${model}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.warn(`Gemini API Error with ${model}:`, errorText);
+        throw new Error(`Google API Error (${model}): ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      const textRes = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!textRes) throw new Error('No valid response from AI');
+
+      return JSON.parse(textRes);
+    } catch (error) {
+      lastError = error;
+      // If it's a model-specific error or 503/404/429, we'll loop to the next one.
+      // If we exhaust all models, it will throw the last error outside the loop.
+    }
   }
 
-  const data = await response.json();
-  const textRes = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!textRes) throw new Error('No valid response from AI');
-
-  return JSON.parse(textRes);
+  throw lastError;
 }
 
 export async function POST(request) {
