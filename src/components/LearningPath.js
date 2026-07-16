@@ -47,33 +47,12 @@ export default function LearningPath({ lastResult }) {
     <section id="view-learning-path" className="view-section active">
       <div className="hero">
         <div className="hero-text">
-          <h3 className="hero-greeting">Your Custom Learning Path</h3>
+          <h3 className="hero-greeting">Learning Path</h3>
           <p className="hero-tagline">AI-generated curriculum based on your skill gaps.</p>
         </div>
-      </div>
-
-      <div className="results-section visible" style={{ marginTop: '24px' }}>
-        <div className="results-grid" style={{ gridTemplateColumns: '1fr' }}>
-          <div className="result-card neo-pressed">
-            <h4 className="card-title" style={{ color: 'var(--primary-color)' }}>
-              <span className="material-symbols-outlined">target</span>
-              Target Skills
-            </h4>
-            <div className="skill-container">
-              {missingSkills.length === 0 ? (
-                <span className="empty-state">No gaps identified. Run a Gap Analysis first!</span>
-              ) : (
-                missingSkills.map((skill, i) => (
-                  <span key={i} className="skill-badge gap-skill visible">{skill}</span>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-        
-        <div className="cta-wrapper" style={{ marginTop: '24px' }}>
+        <div className="hero-actions">
           <button 
-            className="btn-analyze" 
+            className="btn btn-primary" 
             onClick={handleGenerate} 
             disabled={loading || missingSkills.length === 0}
           >
@@ -82,20 +61,26 @@ export default function LearningPath({ lastResult }) {
             ) : (
               <>
                 <span className="material-symbols-outlined">school</span>
-                <span>Generate Curriculum</span>
+                Generate Curriculum
               </>
             )}
           </button>
         </div>
-
-        {error && <div style={{ color: 'var(--danger-color)', marginTop: '12px', textAlign: 'center' }}>{error}</div>}
-
-        {pathHtml && (
-          <div className="result-card neo-pressed" style={{ marginTop: '24px' }}>
-            <div className="learning-path-content" dangerouslySetInnerHTML={{ __html: pathHtml }} />
-          </div>
-        )}
       </div>
+
+      {error && <div style={{ color: 'var(--gap)', marginTop: '12px', textAlign: 'center' }}>{error}</div>}
+
+      {pathHtml ? (
+        <div className="learning-path-content neo-pressed visible" style={{ marginTop: '24px', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+          <div dangerouslySetInnerHTML={{ __html: pathHtml }} />
+        </div>
+      ) : (
+        <div className="empty-state" style={{ marginTop: '40px', textAlign: 'center' }}>
+          {missingSkills.length === 0 
+            ? "Run a Gap Analysis first, then come here to generate a custom learning path." 
+            : `Ready to generate a curriculum for: ${missingSkills.join(', ')}`}
+        </div>
+      )}
     </section>
   );
 }
