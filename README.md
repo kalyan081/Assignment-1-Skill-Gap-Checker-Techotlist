@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SkillLens AI - Techotlist Assignment
 
-## Getting Started
+A modern, AI-powered Next.js application that evaluates a candidate's fit for a role based on their resume and a Job Description. This project fulfills the requirements for **Assignment 1 (Skill Gap Checker)** and **Assignment 2 (Fit Verdict)**.
 
-First, run the development server:
+## Features Completed
+- **Assignment 1 (Skill Gap Checker):** Extracts technical skills from both the Resume and Job Description using Google Gemini API. Calculates Match Percentage, Matched Skills, and Missing Skills.
+- **Assignment 2 (Fit Verdict):** Uses AI to generate a definitive Fit Verdict ("Qualified", "Almost There", or "Not Yet") and provides 3 concise reasons supporting the decision.
+- **File Parsing:** Native support for extracting text from `.pdf`, `.docx`, and `.txt` files directly in the browser using `pdf.js` and `mammoth.js`.
+- **Modern Tech Stack:** Built with Next.js App Router (React) and raw CSS for a fast, responsive, and beautiful Neumorphic UI. 
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Setup Instructions
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Prerequisites
+- Node.js 18.x or higher
+- A Google Gemini API Key
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### Local Development
+1. Clone the repository:
+   ```bash
+   git clone <your-repo-url>
+   cd stitch_ai_skill_gap_analyzer
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Learn More
+3. Configure Environment Variables:
+   Create a `.env.local` file in the root directory and add your Gemini API key:
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key_here
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Assumptions
+- **AI Model Selection:** The `gemini-1.5-flash-latest` model is used for fast, structured JSON generation. 
+- **Skill Matching Logic:** Skill extraction is handled by AI to capture variations, but the actual matching is done programmatically (case-insensitive string comparison after alphanumeric normalization) to ensure deterministic percentage calculation.
+- **Verdict Generation:** To save tokens and reduce latency, the second AI prompt for Assignment 2 only evaluates the extracted `Matched Skills` and `Missing Skills` to determine the Fit Verdict, rather than reprocessing the entire raw resume and JD.
 
-## Deploy on Vercel
+## Trade-offs Made
+- **CSS Framework:** While TailwindCSS is standard in Next.js, this project uses a highly customized global Vanilla CSS file to achieve a specific "dark mode glass/neumorphic" aesthetic. This gives greater control over complex micro-animations and gradients but sacrifices some component-level CSS modularity.
+- **Client-Side Parsing:** PDF and DOCX files are parsed entirely on the client side (using `pdf.js` and `mammoth.js`) rather than uploading the file to a server. This improves data privacy and reduces server costs but requires loading heavier scripts on the frontend.
+- **State Management:** React `useState` is used instead of a robust state manager like Redux since the application state is relatively flat and localized.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+This project is fully optimized for deployment on Vercel. 
+Simply push the repository to GitHub, link the repository in Vercel, and ensure you add the `GEMINI_API_KEY` to your Vercel Environment Variables before deploying.
