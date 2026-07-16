@@ -182,7 +182,7 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData, 
           ) : (
             <>
               <span className="material-symbols-outlined">analytics</span>
-              <span>Analyze Candidate Fit</span>
+              <span>Analyse</span>
             </>
           )}
         </button>
