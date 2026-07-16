@@ -66,11 +66,11 @@ export default function SkillExtraction() {
         <div className="results-section visible" style={{ marginTop: '24px' }}>
           <div className="results-grid">
             <div className="result-card neo-pressed">
-              <h4 className="card-title" style={{ color: 'var(--primary-color)' }}>
+              <h4 className="skills-heading match">
                 <span className="material-symbols-outlined">psychology</span>
                 Extracted Skills ({skills.length})
               </h4>
-              <div className="skill-container">
+              <div className="skills-badges">
                 {skills.length === 0 ? (
                   <span className="empty-state">No technical skills found.</span>
                 ) : (

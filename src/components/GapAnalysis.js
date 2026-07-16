@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 
-export default function GapAnalysis({ userName, onAnalysisComplete, loadedData }) {
+export default function GapAnalysis({ userName, onAnalysisComplete, loadedData, onSaveReport }) {
   const [resumeText, setResumeText] = useState(loadedData?.resumeSnippet || '');
   const [jdText, setJdText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -109,7 +109,7 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData }
           <p className="hero-tagline">Mapping your path for <span className="accent">Techotlist Assignment -1 Skill Gap Checker</span>.</p>
         </div>
         <div className="hero-actions">
-          <button className="btn btn-ghost" id="saveReportBtn" disabled>
+          <button className="btn btn-ghost" id="saveReportBtn" disabled={!result} onClick={onSaveReport}>
             <span className="material-symbols-outlined">download</span>
             Save Report
           </button>

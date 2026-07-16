@@ -43,7 +43,7 @@ export default function Dashboard({ userName, history, onLoadAnalysis, onDeleteA
           {history.length === 0 ? (
             <p className="empty-state">No analyses yet.</p>
           ) : (
-            history.map(entry => (
+            [...history].sort((a, b) => b.matchPercentage - a.matchPercentage).map(entry => (
               <div key={entry.id} className="history-item">
                 <div className={`history-score ${entry.matchPercentage >= 70 ? 'high' : entry.matchPercentage >= 40 ? 'mid' : 'low'}`}>
                   {entry.matchPercentage}%

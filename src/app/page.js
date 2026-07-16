@@ -15,6 +15,7 @@ export default function Home() {
   const [theme, setTheme] = useState('dark');
   const [history, setHistory] = useState([]);
   const [lastResult, setLastResult] = useState(null);
+  const [lastSnippet, setLastSnippet] = useState(null);
   
   const [showHelpModal, setShowHelpModal] = useState(false);
 
@@ -51,21 +52,27 @@ export default function Home() {
 
   const handleAnalysisComplete = (data, resumeSnippet) => {
     setLastResult(data);
+    setLastSnippet(resumeSnippet);
+  };
+
+  const handleSaveReport = () => {
+    if (!lastResult) return;
     
-    // Add to history
+    // Check if we already saved this exact result (optional, but good to avoid dupes)
     const newEntry = {
       id: Date.now().toString(),
       date: new Date().toLocaleDateString(),
-      resumeSnippet: resumeSnippet.substring(0, 30),
-      matchPercentage: data.matchPercentage,
-      matchedCount: data.matchedSkills.length,
-      missingCount: data.missingSkills.length,
-      data: data
+      resumeSnippet: lastSnippet?.substring(0, 30) || 'Analysis',
+      matchPercentage: lastResult.matchPercentage,
+      matchedCount: lastResult.matchedSkills.length,
+      missingCount: lastResult.missingSkills.length,
+      data: lastResult
     };
     
-    const newHistory = [newEntry, ...history].slice(0, 10);
+    const newHistory = [newEntry, ...history].slice(0, 20); // Keep up to 20
     setHistory(newHistory);
     localStorage.setItem('skillLens_history', JSON.stringify(newHistory));
+    alert('Analysis saved successfully! You can view it in the Dashboard.');
   };
 
 
@@ -160,6 +167,7 @@ export default function Home() {
             <GapAnalysis 
               userName={userName} 
               onAnalysisComplete={handleAnalysisComplete}
+              onSaveReport={handleSaveReport}
               loadedData={activeView === 'view-gap-analysis' ? lastResult : null}
             />
           </div>
