@@ -8,7 +8,7 @@ This single unified application offers a comprehensive dashboard interface to co
 
 ## 🔗 Live Application & Code
 * **GitHub Repository:** [https://github.com/kalyan081/Assignment-1-Skill-Gap-Checker-Techotlist](https://github.com/kalyan081/Assignment-1-Skill-Gap-Checker-Techotlist)
-* **Deployed URL (Vercel):** *[Insert your updated Vercel Domain URL here]*
+* **Deployed URL (Vercel):** *assignment-skill-gap-checker-techotlist.vercel.app*
 
 ---
 
