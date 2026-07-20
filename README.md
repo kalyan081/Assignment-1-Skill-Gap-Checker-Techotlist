@@ -34,7 +34,7 @@ This application is split into three main modules, making it exceptionally easy 
 
 ---
 
-## ⚙️ Spoon-Fed Setup Instructions
+## ⚙️ Setup Instructions
 
 Follow these exact steps to run the project locally on your machine in under 2 minutes:
 
