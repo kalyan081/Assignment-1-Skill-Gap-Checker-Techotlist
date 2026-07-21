@@ -8,6 +8,8 @@ export default function Dashboard({ userName, history, onLoadAnalysis, onDeleteA
     ? Math.round(history.reduce((acc, h) => acc + (h.matchPercentage || 0), 0) / totalAnalyses)
     : 0;
 
+  const [threshold, setThreshold] = React.useState(60);
+
   return (
     <section id="view-dashboard" className="view-section active">
       <div className="hero">
@@ -33,6 +35,85 @@ export default function Dashboard({ userName, history, onLoadAnalysis, onDeleteA
           </div>
         </div>
       </div>
+
+      {history.length > 0 && (
+        <div className="dashboard-bulk-export neo-pressed" style={{ padding: '20px', borderRadius: 'var(--radius-md)', marginBottom: '24px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '28px' }}>download_for_offline</span>
+            <div>
+              <h5 style={{ margin: 0, fontSize: '15px', fontWeight: '600' }}>Bulk Export Candidates</h5>
+              <p style={{ margin: 0, fontSize: '12px', opacity: 0.7 }}>Export sorted candidates matching or exceeding your target percentage threshold.</p>
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <label htmlFor="bulkThresholdInput" style={{ fontSize: '13px', fontWeight: '500' }}>Min Match %:</label>
+              <input
+                id="bulkThresholdInput"
+                type="number"
+                min="0"
+                max="100"
+                value={threshold}
+                onChange={(e) => setThreshold(Math.max(0, Math.min(100, parseInt(e.target.value) || 0)))}
+                style={{
+                  width: '64px',
+                  padding: '6px 8px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface)',
+                  color: 'var(--on-surface)',
+                  textAlign: 'center',
+                  fontWeight: '600'
+                }}
+              />
+            </div>
+            <button
+              className="btn btn-primary"
+              style={{ padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+              onClick={() => {
+                const sortedHistory = [...history].sort((a, b) => b.matchPercentage - a.matchPercentage);
+                const filtered = sortedHistory.filter(h => h.matchPercentage >= threshold);
+                
+                if (filtered.length === 0) {
+                  alert(`No candidates found with match percentage >= ${threshold}%`);
+                  return;
+                }
+                
+                const csvRows = [
+                  ['Candidate (Snippet)', 'Date', 'Match %', 'Verdict', 'Matched Skills Count', 'Missing Skills Count', 'Matched Skills', 'Missing Skills', 'Strategic Insight']
+                ];
+                
+                filtered.forEach(entry => {
+                  csvRows.push([
+                    entry.resumeSnippet || 'Analysis',
+                    entry.date,
+                    `${entry.matchPercentage}%`,
+                    entry.data?.verdict || 'Unknown',
+                    entry.matchedCount,
+                    entry.missingCount,
+                    entry.data?.matchedSkills?.join('; ') || 'None',
+                    entry.data?.missingSkills?.join('; ') || 'None',
+                    entry.data?.strategicInsight || ''
+                  ]);
+                });
+                
+                const csvContent = csvRows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `bulk-candidates-match-ge-${threshold}-${Date.now()}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>database</span>
+              Export Filtered CSV (${history.filter(h => h.matchPercentage >= threshold).length})
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="dashboard-recent neo-pressed">
         <h4 className="section-heading">
