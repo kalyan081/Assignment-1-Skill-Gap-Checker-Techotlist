@@ -10,6 +10,34 @@ const MODELS = [
 ];
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 
+function safeParseSkillsArray(textRes) {
+  if (!textRes) return [];
+  let cleanText = textRes.trim();
+  if (cleanText.startsWith('```')) {
+    cleanText = cleanText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
+  }
+  try {
+    const parsed = JSON.parse(cleanText);
+    if (Array.isArray(parsed)) {
+      return parsed.map(s => String(s));
+    }
+    if (parsed && typeof parsed === 'object') {
+      const possibleArray = parsed.skills || parsed.languages || parsed.tools || parsed.keywords;
+      if (Array.isArray(possibleArray)) {
+        return possibleArray.map(s => String(s));
+      }
+      return Object.values(parsed).filter(v => typeof v === 'string');
+    }
+  } catch (e) {
+    console.warn("JSON parse failed in safeParseSkillsArray, trying regex match:", e.message);
+  }
+  const matches = cleanText.match(/"([^"\\]|\\.)*"/g);
+  if (matches) {
+    return matches.map(m => m.slice(1, -1));
+  }
+  return [];
+}
+
 function extractLocalSkills(text) {
   return new Promise((resolve, reject) => {
     // Resolve python via PYTHON_PATH env var, or fall back to system PATH
@@ -98,12 +126,7 @@ ${text}`;
             const data = await response.json();
             const textRes = data.candidates?.[0]?.content?.parts?.[0]?.text;
             if (textRes) {
-              let skills = [];
-              try {
-                skills = JSON.parse(textRes);
-              } catch (e) {
-                skills = [textRes];
-              }
+              const skills = safeParseSkillsArray(textRes);
               return NextResponse.json({ skills, source: 'gemini_api_fallback' });
             }
           }

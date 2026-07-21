@@ -85,6 +85,34 @@ async function predictFitONNX(matchPercentage, matchedCount, missingCount) {
   }
 }
 
+function safeParseSkillsArray(textRes) {
+  if (!textRes) return [];
+  let cleanText = textRes.trim();
+  if (cleanText.startsWith('```')) {
+    cleanText = cleanText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
+  }
+  try {
+    const parsed = JSON.parse(cleanText);
+    if (Array.isArray(parsed)) {
+      return parsed.map(s => String(s));
+    }
+    if (parsed && typeof parsed === 'object') {
+      const possibleArray = parsed.skills || parsed.languages || parsed.tools || parsed.keywords;
+      if (Array.isArray(possibleArray)) {
+        return possibleArray.map(s => String(s));
+      }
+      return Object.values(parsed).filter(v => typeof v === 'string');
+    }
+  } catch (e) {
+    console.warn("JSON parse failed in safeParseSkillsArray, trying regex match:", e.message);
+  }
+  const matches = cleanText.match(/"([^"\\]|\\.)*"/g);
+  if (matches) {
+    return matches.map(m => m.slice(1, -1));
+  }
+  return [];
+}
+
 async function extractSkills(text, apiKey) {
   const prompt = `Extract all technical skills, programming languages, and tools from the text below. 
 Return ONLY a valid JSON array of strings, like ["React", "Python"]. No markdown fences.
@@ -124,7 +152,7 @@ ${text}`;
       const textRes = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!textRes) throw new Error('No valid response from AI');
 
-      return JSON.parse(textRes);
+      return safeParseSkillsArray(textRes);
     } catch (error) {
       lastError = error;
       // If it's a model-specific error or 503/404/429, we'll loop to the next one.
@@ -301,24 +329,30 @@ No markdown fences.`;
         console.error("ONNX fit prediction failed:", e);
       }
 
+      let parsedSuccessfully = false;
       if (vText) {
         try {
-          const vJson = JSON.parse(vText);
-          // Validate verdict is strictly one of the allowed values
+          let cleanVText = vText.trim();
+          if (cleanVText.startsWith('```')) {
+            cleanVText = cleanVText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
+          }
+          const vJson = JSON.parse(cleanVText);
           const ALLOWED_VERDICTS = ['Qualified', 'Almost There', 'Not Yet'];
           if (ALLOWED_VERDICTS.includes(vJson.verdict)) {
             verdict = vJson.verdict;
+            reasons = Array.isArray(vJson.reasons) ? vJson.reasons.slice(0, 3) : reasons;
+            strategicInsight = reasons.join(' ');
+            parsedSuccessfully = true;
           } else {
             console.warn(`AI returned invalid verdict "${vJson.verdict}", falling back to ONNX.`);
-            verdict = onnxVerdict;
           }
-          reasons = Array.isArray(vJson.reasons) ? vJson.reasons.slice(0, 3) : reasons;
-          strategicInsight = reasons.join(' ');
         } catch (e) {
           console.error("Failed to parse verdict JSON:", e);
         }
-      } else {
-        console.warn("AI verdict failed or disabled, using local offline ONNX verdict calculation.");
+      }
+
+      if (!parsedSuccessfully) {
+        console.warn("AI verdict failed or disabled/invalid, using local offline ONNX verdict calculation.");
         verdict = onnxVerdict;
         if (verdict === "Qualified") {
           reasons = [
