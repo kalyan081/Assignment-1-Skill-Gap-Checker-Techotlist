@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { spawn } from 'child_process';
 import path from 'path';
-import * as ort from 'onnxruntime-node';
+// onnxruntime-node will be imported dynamically in predictFitONNX
 
 const MODELS = [
   'gemini-3.5-flash',
@@ -55,6 +55,7 @@ function extractLocalSkills(text) {
 
 async function predictFitONNX(matchPercentage, matchedCount, missingCount) {
   try {
+    const ort = await import('onnxruntime-node');
     const modelPath = path.join(/*turbopackIgnore: true*/ process.cwd(), 'ml', 'models', 'fit_classifier.onnx');
     const session = await ort.InferenceSession.create(modelPath);
     
@@ -78,7 +79,7 @@ async function predictFitONNX(matchPercentage, matchedCount, missingCount) {
     const categories = ["Not Yet", "Almost There", "Qualified"];
     return categories[bestIdx];
   } catch (e) {
-    console.error("ONNX Inference failed:", e);
+    console.error("ONNX Inference failed (falling back to rules):", e.message);
     if (matchPercentage >= 75) return "Qualified";
     if (matchPercentage >= 40) return "Almost There";
     return "Not Yet";
