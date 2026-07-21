@@ -8,7 +8,7 @@ This single unified application offers a comprehensive dashboard interface to co
 
 ## 🔗 Live Application & Code
 * **GitHub Repository:** [https://github.com/kalyan081/Assignment-1-Skill-Gap-Checker-Techotlist](https://github.com/kalyan081/Assignment-1-Skill-Gap-Checker-Techotlist)
-* **Deployed URL (Vercel):** *[Insert your updated Vercel Domain URL here]*
+* **Deployed URL (Vercel):** https://stitch-ai-skill-gap-checker-techotlist.vercel.app/
 
 ---
 
@@ -34,7 +34,7 @@ This application is split into three main modules, making it exceptionally easy 
 
 ---
 
-## ⚙️ Spoon-Fed Setup Instructions
+## ⚙️ Setup Instructions
 
 Follow these exact steps to run the project locally on your machine in under 2 minutes:
 

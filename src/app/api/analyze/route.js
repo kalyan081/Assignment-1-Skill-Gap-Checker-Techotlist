@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+import { spawn } from 'child_process';
+import path from 'path';
+import * as ort from 'onnxruntime-node';
 
 const MODELS = [
   'gemini-3.5-flash',
@@ -7,6 +10,82 @@ const MODELS = [
   'gemini-flash-latest'
 ];
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
+
+function extractLocalSkills(text) {
+  return new Promise((resolve, reject) => {
+    // Path to the python executable in the project-assignments environment
+    // Built dynamically to prevent Next.js static tracing from copying the conda directory
+    const condaBase = ['C:', 'Users', 'Admin', 'miniconda3', 'envs', 'project-assignments'].join(path.sep);
+    const pythonPath = process.env.PYTHON_PATH || path.join(condaBase, 'python.exe');
+    const scriptPath = path.join(/*turbopackIgnore: true*/ process.cwd(), 'ml', 'scripts', 'extract.py');
+
+    const pyProcess = spawn(pythonPath, [scriptPath]);
+    
+    let stdoutData = '';
+    let stderrData = '';
+
+    pyProcess.stdout.on('data', (data) => {
+      stdoutData += data.toString();
+    });
+
+    pyProcess.stderr.on('data', (data) => {
+      stderrData += data.toString();
+    });
+
+    pyProcess.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`Python process exited with code ${code}. Stderr: ${stderrData}`));
+        return;
+      }
+      try {
+        const skills = JSON.parse(stdoutData.trim());
+        resolve(skills);
+      } catch (err) {
+        reject(new Error(`Failed to parse Python output: ${stdoutData}. Error: ${err.message}`));
+      }
+    });
+
+    pyProcess.on('error', (err) => {
+      reject(err);
+    });
+
+    // Write input text to stdin
+    pyProcess.stdin.write(text);
+    pyProcess.stdin.end();
+  });
+}
+
+async function predictFitONNX(matchPercentage, matchedCount, missingCount) {
+  try {
+    const modelPath = path.join(/*turbopackIgnore: true*/ process.cwd(), 'ml', 'models', 'fit_classifier.onnx');
+    const session = await ort.InferenceSession.create(modelPath);
+    
+    const data = Float32Array.from([matchPercentage, matchedCount, missingCount]);
+    const inputTensor = new ort.Tensor('float32', data, [1, 3]);
+    
+    const feeds = { input: inputTensor };
+    const results = await session.run(feeds);
+    const outputTensor = results.output;
+    const outputData = outputTensor.data;
+    
+    let bestIdx = 0;
+    let bestVal = -Infinity;
+    for (let i = 0; i < outputData.length; i++) {
+      if (outputData[i] > bestVal) {
+        bestVal = outputData[i];
+        bestIdx = i;
+      }
+    }
+    
+    const categories = ["Not Yet", "Almost There", "Qualified"];
+    return categories[bestIdx];
+  } catch (e) {
+    console.error("ONNX Inference failed:", e);
+    if (matchPercentage >= 75) return "Qualified";
+    if (matchPercentage >= 40) return "Almost There";
+    return "Not Yet";
+  }
+}
 
 async function extractSkills(text, apiKey) {
   const prompt = `Extract all technical skills, programming languages, and tools from the text below. 
@@ -91,18 +170,31 @@ export async function POST(request) {
     const { resume, jd } = await request.json();
     const apiKey = process.env.GEMINI_API_KEY;
 
-    if (!apiKey) {
-      return NextResponse.json({ error: 'API key not configured on server' }, { status: 500 });
-    }
-
     if (!resume || !jd) {
       return NextResponse.json({ error: 'Missing resume or job description' }, { status: 400 });
     }
 
-    // 1. Extract skills from Resume
-    const resumeSkills = await extractSkills(resume, apiKey);
-    // 2. Extract skills from JD
-    const jdSkills = await extractSkills(jd, apiKey);
+    // 1. Extract skills from Resume (local first, then fallback)
+    let resumeSkills;
+    try {
+      console.log("Attempting local SpaCy NLP extraction for resume...");
+      resumeSkills = await extractLocalSkills(resume);
+      console.log(`Local SpaCy NLP extraction successful for resume. Found ${resumeSkills.length} skills.`);
+    } catch (err) {
+      console.warn("Local resume extraction failed, falling back to Gemini API / Regex. Error:", err.message);
+      resumeSkills = await extractSkills(resume, apiKey);
+    }
+
+    // 2. Extract skills from JD (local first, then fallback)
+    let jdSkills;
+    try {
+      console.log("Attempting local SpaCy NLP extraction for JD...");
+      jdSkills = await extractLocalSkills(jd);
+      console.log(`Local SpaCy NLP extraction successful for JD. Found ${jdSkills.length} skills.`);
+    } catch (err) {
+      console.warn("Local JD extraction failed, falling back to Gemini API / Regex. Error:", err.message);
+      jdSkills = await extractSkills(jd, apiKey);
+    }
 
     // 3. Standardize and Compare programmatically
     const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -180,6 +272,14 @@ No markdown fences.`;
         }
       }
 
+      // Use ONNX fit classifier to get verdict prediction
+      let onnxVerdict = "Not Yet";
+      try {
+        onnxVerdict = await predictFitONNX(matchPercentage, matchedSkills.length, missingSkills.length);
+      } catch (e) {
+        console.error("ONNX fit prediction failed:", e);
+      }
+
       if (vText) {
         try {
           const vJson = JSON.parse(vText);
@@ -190,16 +290,26 @@ No markdown fences.`;
           console.error("Failed to parse verdict JSON:", e);
         }
       } else {
-        console.warn("AI verdict failed, using local offline verdict calculation.");
-        if (matchPercentage >= 75) {
-          verdict = "Qualified";
-          reasons = ["Strong alignment with required skills.", "Matches core technical stack.", "Candidate is ready for interview."];
-        } else if (matchPercentage >= 40) {
-          verdict = "Almost There";
-          reasons = ["Partial alignment with job requirements.", "Missing some key specialized skills.", "Could be trained for the role."];
+        console.warn("AI verdict failed or disabled, using local offline ONNX verdict calculation.");
+        verdict = onnxVerdict;
+        if (verdict === "Qualified") {
+          reasons = [
+            "Model predicted high compatibility based on matched skills.",
+            "Strong alignment with job description requirements.",
+            "Recommended for interview."
+          ];
+        } else if (verdict === "Almost There") {
+          reasons = [
+            "Model predicted moderate compatibility.",
+            "Candidate matches several key skills but has some gaps.",
+            "Consider training or secondary review."
+          ];
         } else {
-          verdict = "Not Yet";
-          reasons = ["Significant gaps in required skills.", "Lacks core technical stack.", "Not recommended at this time."];
+          reasons = [
+            "Model predicted low compatibility based on current match.",
+            "Significant gaps in required technical skills.",
+            "Not recommended at this stage."
+          ];
         }
         strategicInsight = reasons.join(' ');
       }
@@ -208,13 +318,16 @@ No markdown fences.`;
       reasons = ['No JD skills found.', '', ''];
     }
 
+    const predictedRole = `ONNX Fit Model predicted: ${onnxVerdict}`;
+
     return NextResponse.json({
       matchPercentage,
       matchedSkills,
       missingSkills,
       strategicInsight,
       verdict,
-      reasons
+      reasons,
+      predictedRole
     });
   } catch (error) {
     console.error('Analyze API Error:', error);

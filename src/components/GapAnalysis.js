@@ -266,6 +266,15 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData, 
                   }}>{result.verdict || 'Unknown'}</span></span>
                 </div>
                 <div className="insight-text">
+                  {result.predictedRole && (
+                    <div style={{ padding: '10px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.1)', marginBottom: '12px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="material-symbols-outlined" style={{ color: 'var(--success-color)', fontSize: '20px' }}>psychology</span>
+                      <div>
+                        <span style={{ opacity: 0.7 }}>Predicted Specialization: </span>
+                        <strong className="accent" style={{ color: 'var(--success-color)', fontWeight: '600' }}>{result.predictedRole}</strong>
+                      </div>
+                    </div>
+                  )}
                   <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.6' }}>
                     {result.reasons?.map((reason, idx) => (
                       <li key={idx} style={{ marginBottom: '8px' }}>{reason}</li>
