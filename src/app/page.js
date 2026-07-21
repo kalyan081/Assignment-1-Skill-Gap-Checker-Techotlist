@@ -59,7 +59,25 @@ export default function Home() {
   const handleSaveReport = () => {
     if (!lastResult) return;
     
-    // Check if we already saved this exact result (optional, but good to avoid dupes)
+    // 1. Export as real CSV file download
+    const rows = [
+      ['Field', 'Value'],
+      ['Match %', lastResult.matchPercentage],
+      ['Verdict', lastResult.verdict],
+      ['Matched Skills', lastResult.matchedSkills.join('; ')],
+      ['Missing Skills', lastResult.missingSkills.join('; ')],
+      ['Strategic Insight', lastResult.strategicInsight || ''],
+    ];
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `skill-gap-report-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    // 2. Also save to localStorage history
     const newEntry = {
       id: Date.now().toString(),
       date: new Date().toLocaleDateString(),
@@ -70,10 +88,9 @@ export default function Home() {
       data: lastResult
     };
     
-    const newHistory = [newEntry, ...history].slice(0, 20); // Keep up to 20
+    const newHistory = [newEntry, ...history].slice(0, 20);
     setHistory(newHistory);
     localStorage.setItem('skillLens_history', JSON.stringify(newHistory));
-    alert('Analysis saved successfully! You can view it in the Dashboard.');
   };
 
 

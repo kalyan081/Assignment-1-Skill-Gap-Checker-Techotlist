@@ -80,7 +80,41 @@ Open your browser and navigate to:
 
 * **Zero-Outage Local Fallback Engine:** Google's free-tier Gemini API occasionally returns `503 (Service Unavailable)` errors during high global demand. To make sure this app **never crashes** during evaluation, we implemented a smart fallback. If Google's servers time out or fail, the app immediately switches to a **Local Regex-Based Parsing Engine** matching against a dictionary of 50+ modern technologies (React, Node, Docker, etc.) and calculates the fit verdict programmatically so the UI remains fully functional.
 * **Cascading Model Pipeline:** The API router implements a cascading fallback loop. It starts with the newest models (`gemini-3.5-flash`) and cascades down through fallback configurations (`gemini-3-flash-preview` -> `gemini-2.0-flash` -> `gemini-flash-latest`) to bypass rate limits or model deprecations.
-* **Deterministic Skill Matching:** Rather than relying on creative AI to match lists, matching is done programmatically using case-insensitive normalization. This ensures matching percentages are mathematically exact.
+* **Deterministic Skill Matching:** Rather than relying on creative AI to match lists, matching is done programmatically using case-insensitive normalization with synonym mapping. This ensures matching percentages are mathematically exact.
+
+---
+
+## 🧠 Local ML / NLP Layer
+
+This project includes an optional **local Machine Learning and NLP pipeline** that runs alongside the web server for enhanced accuracy:
+
+### SpaCy NLP Skill Extraction
+* **Script:** `ml/scripts/extract.py` uses a SpaCy Rule-Based Entity Ruler to extract technical skills from resumes and JDs without calling external APIs.
+* **Model:** Requires `en_core_web_sm` — install with: `python -m spacy download en_core_web_sm`
+
+### ONNX Fit Classifier
+* **Model:** `ml/models/fit_classifier.onnx` — a PyTorch MLP classifier compiled to ONNX format.
+* **Purpose:** When the Gemini API is unavailable, this model runs locally inside Node.js (via `onnxruntime-node`) to predict the fit verdict based on the dynamically calculated match statistics.
+* **Training:** Run `python ml/scripts/train_onnx.py` to retrain and re-export the ONNX model.
+
+### Research Notebook
+* **Notebook:** `ml/notebooks/model.ipynb` — an interactive Jupyter notebook used for model research, framework comparisons (Scikit-Learn vs. PyTorch vs. TensorFlow), and visualization of training metrics.
+
+### Python Environment Setup
+```bash
+# Create and activate the conda environment
+conda create -y -n project-assignments python=3.12
+conda activate project-assignments
+pip install -r ml/requirements.txt
+python -m spacy download en_core_web_sm
+```
+
+To configure a custom Python path, add the following to `.env.local`:
+```env
+PYTHON_PATH=C:/Users/YourName/miniconda3/envs/project-assignments/python.exe
+```
+
+> ⚠️ **Deployment Note:** The local SpaCy NLP extraction layer is a **development-only** feature. Vercel's Node.js serverless functions cannot spawn Python subprocesses. On the hosted deployment, the app gracefully falls back to Gemini API or regex-based extraction.
 
 ---
 
@@ -95,3 +129,6 @@ Open your browser and navigate to:
 3. **LocalStorage for History Storage:** 
    * *Trade-off:* Past reports are persisted inside the browser's `localStorage` rather than setting up an external PostgreSQL/MongoDB database.
    * *Why?* This makes the project completely zero-config and self-contained for evaluators, eliminating the need to set up local database servers or configure complex database credentials to test history features.
+4. **ONNX Runtime vs. FastAPI Microservice:**
+   * *Trade-off:* We bundle the ML model as an ONNX file and run inference directly inside Node.js via `onnxruntime-node`, rather than deploying a separate Python FastAPI service.
+   * *Why?* This eliminates the need to manage a second server process, simplifies deployment, and keeps the architecture as a single self-contained Next.js app.

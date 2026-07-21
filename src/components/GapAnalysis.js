@@ -112,7 +112,11 @@ export default function GapAnalysis({ userName, onAnalysisComplete, loadedData, 
             <span className="material-symbols-outlined">download</span>
             Save Report
           </button>
-          <button className="btn btn-primary" id="shareBtn" disabled={!result}>
+          <button className="btn btn-primary" id="shareBtn" disabled={!result} onClick={() => {
+            if (!result) return;
+            const summary = `Skill Gap Analysis\nMatch: ${result.matchPercentage}% | Verdict: ${result.verdict}\nMatched: ${result.matchedSkills?.join(', ') || 'None'}\nMissing: ${result.missingSkills?.join(', ') || 'None'}`;
+            navigator.clipboard.writeText(summary).then(() => alert('Analysis summary copied to clipboard!'));
+          }}>
             <span className="material-symbols-outlined">share</span>
             Share Analysis
           </button>

@@ -13,10 +13,8 @@ const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 function extractLocalSkills(text) {
   return new Promise((resolve, reject) => {
-    // Path to the python executable in the project-assignments environment
-    // Built dynamically to prevent Next.js static tracing from copying the conda directory
-    const condaBase = ['C:', 'Users', 'Admin', 'miniconda3', 'envs', 'project-assignments'].join(path.sep);
-    const pythonPath = process.env.PYTHON_PATH || path.join(condaBase, 'python.exe');
+    // Resolve python via PYTHON_PATH env var, or fall back to system PATH
+    const pythonPath = process.env.PYTHON_PATH || (process.platform === 'win32' ? 'python' : 'python3');
     const scriptPath = path.join(/*turbopackIgnore: true*/ process.cwd(), 'ml', 'scripts', 'extract.py');
 
     const pyProcess = spawn(pythonPath, [scriptPath]);
@@ -112,9 +110,14 @@ ${text}`;
       });
 
       if (!response.ok) {
+        const status = response.status;
         const errorText = await response.text();
         console.warn(`Gemini API Error with ${model}:`, errorText);
-        throw new Error(`Google API Error (${model}): ${response.status} - ${errorText}`);
+        if (status === 401 || status === 400) {
+          // Non-retryable — fail fast instead of trying remaining models
+          throw new Error(`Non-retryable error (${status}): ${errorText}`);
+        }
+        throw new Error(`Google API Error (${model}): ${status} - ${errorText}`);
       }
 
       const data = await response.json();
@@ -138,7 +141,10 @@ ${text}`;
     "sql", "mysql", "postgresql", "mongodb", "redis", "firebase", "oracle",
     "aws", "azure", "gcp", "docker", "kubernetes", "jenkins", "git", "github", "gitlab",
     "html", "css", "sass", "less", "tailwind", "bootstrap", "material-ui", "figma", "machine learning",
-    "data analysis", "agile", "scrum", "jira", "linux", "unix", "bash", "powershell"
+    "data analysis", "agile", "scrum", "jira", "linux", "unix", "bash", "powershell",
+    "pytorch", "tensorflow", "keras", "scikit-learn", "langchain", "llm",
+    "nlp", "natural language processing", "deep learning", "rag",
+    "huggingface", "transformers", "faiss", "spacy", "opencv", "pandas", "numpy"
   ];
 
   const foundSkills = [];
@@ -157,9 +163,9 @@ ${text}`;
     }
   }
 
-  // If even regex fails to find anything, return a generic array so the UI doesn't crash
+  // Return empty array honestly if nothing matched
   if (foundSkills.length === 0) {
-    return ["JavaScript", "HTML", "CSS"];
+    return [];
   }
 
   return foundSkills;
@@ -196,8 +202,22 @@ export async function POST(request) {
       jdSkills = await extractSkills(jd, apiKey);
     }
 
-    // 3. Standardize and Compare programmatically
-    const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+    // 3. Dedup and standardize skills
+    const SYNONYMS = {
+      'reactjs': 'react', 'react.js': 'react',
+      'ml': 'machinelearning',
+      'js': 'javascript',
+      'nodejs': 'nodejs', 'node': 'nodejs',
+      'py': 'python',
+    };
+    const normalize = (str) => {
+      const base = str.toLowerCase().replace(/[^a-z0-9. ]/g, '').trim();
+      return SYNONYMS[base] || base.replace(/[^a-z0-9]/g, '');
+    };
+
+    // Dedup extracted skills before comparison
+    resumeSkills = [...new Set(resumeSkills.map(s => s.trim()))];
+    jdSkills = [...new Set(jdSkills.map(s => s.trim()))];
     
     const resumeNormalized = resumeSkills.map(s => ({ raw: s, norm: normalize(s) }));
     const jdNormalized = jdSkills.map(s => ({ raw: s, norm: normalize(s) }));
@@ -225,6 +245,7 @@ export async function POST(request) {
     let verdict = 'Not Yet';
     let reasons = ['Analysis failed.', '', ''];
     let strategicInsight = '';
+    let onnxVerdict = 'Not Yet';
 
     if (totalJD > 0) {
       const verdictPrompt = `Based on the following skill gap analysis for a candidate:
@@ -273,7 +294,7 @@ No markdown fences.`;
       }
 
       // Use ONNX fit classifier to get verdict prediction
-      let onnxVerdict = "Not Yet";
+      onnxVerdict = "Not Yet";
       try {
         onnxVerdict = await predictFitONNX(matchPercentage, matchedSkills.length, missingSkills.length);
       } catch (e) {
@@ -283,8 +304,15 @@ No markdown fences.`;
       if (vText) {
         try {
           const vJson = JSON.parse(vText);
-          verdict = vJson.verdict;
-          reasons = vJson.reasons;
+          // Validate verdict is strictly one of the allowed values
+          const ALLOWED_VERDICTS = ['Qualified', 'Almost There', 'Not Yet'];
+          if (ALLOWED_VERDICTS.includes(vJson.verdict)) {
+            verdict = vJson.verdict;
+          } else {
+            console.warn(`AI returned invalid verdict "${vJson.verdict}", falling back to ONNX.`);
+            verdict = onnxVerdict;
+          }
+          reasons = Array.isArray(vJson.reasons) ? vJson.reasons.slice(0, 3) : reasons;
           strategicInsight = reasons.join(' ');
         } catch (e) {
           console.error("Failed to parse verdict JSON:", e);

@@ -12,10 +12,8 @@ const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 function extractLocalSkills(text) {
   return new Promise((resolve, reject) => {
-    // Path to the python executable in the collage-projects environment
-    // Built dynamically to prevent Next.js static tracing from copying the conda directory
-    const condaBase = ['C:', 'Users', 'Admin', 'miniconda3', 'envs', 'project-assignments'].join(path.sep);
-    const pythonPath = process.env.PYTHON_PATH || path.join(condaBase, 'python.exe');
+    // Resolve python via PYTHON_PATH env var, or fall back to system PATH
+    const pythonPath = process.env.PYTHON_PATH || (process.platform === 'win32' ? 'python' : 'python3');
     const scriptPath = path.join(/*turbopackIgnore: true*/ process.cwd(), 'ml', 'scripts', 'extract.py');
 
     const pyProcess = spawn(pythonPath, [scriptPath]);
@@ -124,7 +122,10 @@ ${text}`;
       "sql", "mysql", "postgresql", "mongodb", "redis", "firebase", "oracle",
       "aws", "azure", "gcp", "docker", "kubernetes", "jenkins", "git", "github", "gitlab",
       "html", "css", "sass", "less", "tailwind", "bootstrap", "material-ui", "figma", "machine learning",
-      "data analysis", "agile", "scrum", "jira", "linux", "unix", "bash", "powershell"
+      "data analysis", "agile", "scrum", "jira", "linux", "unix", "bash", "powershell",
+      "pytorch", "tensorflow", "keras", "scikit-learn", "langchain", "llm",
+      "nlp", "natural language processing", "deep learning", "rag",
+      "huggingface", "transformers", "faiss", "spacy", "opencv", "pandas", "numpy"
     ];
 
     const foundSkills = [];
@@ -142,7 +143,7 @@ ${text}`;
     }
 
     if (foundSkills.length === 0) {
-      return NextResponse.json({ skills: ["JavaScript", "HTML", "CSS"], source: 'regex_fallback_default' });
+      return NextResponse.json({ skills: [], source: 'regex_fallback_empty' });
     }
 
     return NextResponse.json({ skills: foundSkills, source: 'regex_fallback' });
