@@ -4,9 +4,9 @@ import React from 'react';
 
 export default function Sidebar({ activeView, setActiveView, onHelpModal }) {
   const links = [
-    { id: 'view-dashboard', icon: 'home', label: 'Dashboard' },
-    { id: 'view-skill-analysis', icon: 'bar_chart', label: 'Skill Analysis' },
     { id: 'view-gap-analysis', icon: 'query_stats', label: 'Gap Analysis' },
+    { id: 'view-skill-analysis', icon: 'bar_chart', label: 'Skill Analysis' },
+    { id: 'view-dashboard', icon: 'home', label: 'Dashboard' },
   ];
 
   return (
